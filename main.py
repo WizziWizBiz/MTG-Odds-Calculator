@@ -1,22 +1,22 @@
 """This program prompts inputs for number of cards that the user wants to play on turns 1-4, and the number of lands in the deck.
   The program then calculates the odds of playing a land and a card on turns 1-5, with turn 5 being the commander.
   It will then output this result, along with the number of remaining slots in the deck for other cards (e.g. removal, draw, etc.)."""
-
 from time import sleep
 import pandas as pd
 
+def is_valid_input(t1, t2, t3, t4, lands):
+    """Checks to see if each number entered is a valid integer, and returns the corresponding boolean."""
+    if 1<=t1<=15 and 1<=t2<=15 and 1<=t3<=15 and 1<=t4<=15 and 30<=lands<=45:
+        return True
+    return False
+
 delay_time = 1.5
-good_probability = 1/5
+good_probability = 0.15
 
 #open CSV files as lists
 cards_probability = pd.read_csv('CardsProbability.csv').values.tolist()
 lands_probability = pd.read_csv('LandsProbability.csv').values.tolist()
 
-def isValidInput(t1, t2, t3, t4, lands):
-    """Checks to see if each number entered is a valid integer, and returns the corresponding boolean."""
-    if 1<=t1<=15 and 1<=t2<=15 and 1<=t3<=15 and 1<=t4<=15 and 30<=lands<=45:
-        return True
-    return False
 
 print("Welcome to the 5 mana commander calculator!")
 while True:
@@ -28,7 +28,7 @@ while True:
     num_lands = int(input("Please enter the number of lands: [30-45] "))
 
     #check input validity
-    if not isValidInput(num_turn1, num_turn2, num_turn3, num_turn4, num_lands):
+    if not is_valid_input(num_turn1, num_turn2, num_turn3, num_turn4, num_lands):
         print("One or more numbers was not valid. Please try again.")
         continue
 
@@ -50,7 +50,9 @@ while True:
 
     #overall results
     overall_probability = probability1 * probability2 * probability3 * probability4 * probability_lands
+    overall_probability.round(1)
     cards_remaining = 99 - (num_lands + num_turn1 + num_turn2 + num_turn3 + num_turn4)
+
     print("\nOverall likelihood of success:", overall_probability * 100)
     if overall_probability >= good_probability:
         print("This is a good result!")
@@ -64,6 +66,6 @@ while True:
     if retry.upper() == "N":
         break
     else:
-        print("\n")
+        print("")
         sleep(delay_time)
 print("Thank you for using this program :) have a nice day")
