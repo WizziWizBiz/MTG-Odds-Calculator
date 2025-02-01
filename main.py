@@ -45,36 +45,47 @@ def manual_output():
     cards_remaining = 99 - (num_lands + num_turn1 + num_turn2 + num_turn3 + num_turn4)
 
     print("\nOverall likelihood of success:", overall_probability * 100)
-    if overall_probability >= good_probability:
+    if overall_probability >= probability_threshold:
         print("This is a good result!")
     else:
         print("This is probably not good enough")
     print("Card slots remaining:", cards_remaining)
 
-#TODO: TEST IT
+
 def brute_force(mincards, maxcards, lands=38):
     """Takes a minimum and maximum range for the cards per turn (shared for all 4 slots) and does the calculations for every permutation within that range.
-       It will then output each permutation that has a higher probability of success than good_probability"""
+       It will then output each permutation that has a higher probability of success than probability_threshold"""
 
     combos = []
+
     for card1 in range(mincards, maxcards + 1):
         for card2 in range(mincards, maxcards + 1):
             for card3 in range(mincards, maxcards + 1):
                 for card4 in range(mincards, maxcards + 1):
+
                     probability1 = cards_probability[card1 - 1][1]
                     probability2 = cards_probability[card2 - 1][2]
                     probability3 = cards_probability[card3 - 1][3]
                     probability4 = cards_probability[card4 - 1][4]
                     probability_lands = lands_probability[lands - 30][1]
                     overall_probability = probability1 * probability2 * probability3 * probability4 * probability_lands
-                    if overall_probability >= good_probability:
-                        combos.append([probability1, probability2, probability3, probability4, probability_lands])
+
+                    if overall_probability >= probability_threshold:
+                        #round has been buggy in this IDE, so to get it to work with the right number of decimals I did this funky stuff
+                        combos.append([round(overall_probability*1000)/10,
+                                       cards_probability[card1 - 1][0],
+                                       cards_probability[card2 - 1][0],
+                                       cards_probability[card3 - 1][0],
+                                       cards_probability[card4 - 1][0],
+                                       lands_probability[lands - 30][0]])
+    #sort by probability (which is why that's the first item in every list)
+    combos.sort()
     for combo in combos:
         print(combo)
 
 
 delay_time = 1.5
-good_probability = 0.175
+probability_threshold = 0.175
 
 #open CSV files as lists
 cards_probability = pd.read_csv('CardsProbability.csv').values.tolist()
@@ -84,13 +95,13 @@ lands_probability = pd.read_csv('LandsProbability.csv').values.tolist()
 print("Welcome to the 5 mana commander calculator!")
 
 while True:
-    modality = int(input("Input 1 for manual, 2 for brute force, 3 to quit"))
+    modality = int(input("Input 1 for manual, 2 for brute force, 3 to quit: "))
     if modality == 1:
         manual_output()
         sleep(delay_time)
     elif modality == 2:
-        minimum_cards = int(input("Low end of range? [1-15]"))
-        maximum_cards = int(input("High end of range? [1-15]"))
+        minimum_cards = int(input("Low end of range? [1-15] "))
+        maximum_cards = int(input("High end of range? [1-15] "))
         brute_force(minimum_cards, maximum_cards)
         sleep(delay_time)
     elif modality == 3:
